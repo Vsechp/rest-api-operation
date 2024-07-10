@@ -14,7 +14,6 @@ class SuboperationRequest extends FormRequest
     public function rules()
     {
         return [
-            'operation_id' => 'required|exists:operations,id',
             'number' => 'required|integer',
             'name' => 'required|string|max:255',
         ];

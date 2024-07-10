@@ -2,7 +2,6 @@ FROM php:8.2-fpm AS builder
 
 WORKDIR /app
 
-
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -14,31 +13,23 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_pgsql
 
-
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
-
 
 COPY . /app
 
-
 RUN composer install --no-dev --optimize-autoloader
-
 
 FROM php:8.2-fpm
 
-WORKDIR /app
+WORKDIR /var/www/html
 
-
-COPY --from=builder /app /app
-
+COPY --from=builder /app /var/www/html
 
 RUN apt-get update && apt-get install -y libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql
 
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+CMD php artisan migrate --force && php-fpm
 
-
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
-
-EXPOSE 8000
+EXPOSE 9000

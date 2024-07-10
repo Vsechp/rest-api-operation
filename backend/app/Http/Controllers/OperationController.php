@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Operation;
 use App\Http\Requests\OperationRequest;
 use App\Http\Resources\OperationResource;
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 
 class OperationController extends Controller
@@ -17,8 +18,20 @@ class OperationController extends Controller
 
     public function store(OperationRequest $request)
     {
+
+        $validated = $request->validated();
+        
+        if (Operation::where('number', $validated['number'])->exists()) {
+            return response()->json([
+                'message' => 'Operation with this number already exists.',
+            ], 409);
+        }
+
         $operation = Operation::create($request->validated());
-        return new OperationResource($operation);
+        return response()->json([
+            'message' => 'Operation created successfully',
+            'operation' => new OperationResource($operation)
+        ], 201);
     }
 
     public function show($id)
@@ -30,14 +43,41 @@ class OperationController extends Controller
     public function update(OperationRequest $request, $id)
     {
         $operation = Operation::findOrFail($id);
-        $operation->update($request->validated());
-        return new OperationResource($operation);
+
+        $validated = $request->validated();
+        
+        if (Operation::where('number', $validated['number'])->where('id', '!=', $id)->exists()) {
+            return response()->json([
+                'message' => 'Operation with this number already exists.',
+            ], 409);
+        }
+
+        $operation->update($validated);
+
+        return response()->json([
+            'message' => 'Operation updated successfully',
+            'operation' => new OperationResource($operation)
+        ], 200);
     }
+
 
     public function destroy($id)
     {
         $operation = Operation::findOrFail($id);
-        $operation->delete();
-        return response()->json(null, 204);
+    
+        $suboperationsCount = $operation->suboperations()->withTrashed()->count();
+    
+        if ($suboperationsCount > 0) {
+            return response()->json([
+                'message' => 'Cannot delete operation. Suboperations exist.'
+            ], 409);
+        }
+    
+        $operation->forceDelete();
+    
+        return response()->json([
+            'message' => 'Operation deleted permanently'
+        ], 200);
     }
+    
 }

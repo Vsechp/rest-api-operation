@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OperationRequest extends FormRequest
 {
@@ -11,11 +12,23 @@ class OperationRequest extends FormRequest
         return true;
     }
 
+
     public function rules()
     {
-        return [
-            'number' => 'required|integer|unique:operations,number,' . $this->route('operation'),
+        $rules = [
             'name' => 'required|string|max:255',
         ];
+        
+        if ($this->isMethod('post')) {
+            $rules['number'] = 'required|integer|unique:operations,number';
+        } elseif ($this->isMethod('put') || $this->isMethod('patch')) {
+            $rules['number'] = [
+                'required',
+                'integer',
+                Rule::unique('operations', 'number')->ignore($this->operation),
+            ];
+        }
+
+        return $rules;
     }
 }

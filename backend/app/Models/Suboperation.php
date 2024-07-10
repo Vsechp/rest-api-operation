@@ -19,10 +19,8 @@ class Suboperation extends Model
     {
         parent::boot();
         static::creating(function ($model) {
-            Log::info('Creating Suboperation', ['id' => $model->id]);
             if (empty($model->id)) {
                 $model->id = Str::uuid()->toString();
-                Log::info('Suboperation ID set to UUID', ['id' => $model->id]);
             }
         });
     }

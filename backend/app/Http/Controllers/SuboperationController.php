@@ -15,28 +15,36 @@ class SuboperationController extends Controller
         return SuboperationResource::collection($suboperations);
     }
 
-    public function store(SuboperationRequest $request)
+    public function store(SuboperationRequest $request, $operationId)
     {
-        $suboperation = Suboperation::create($request->validated());
+        $validatedData = $request->validated();
+        $validatedData['operation_id'] = $operationId;
+    
+        $suboperation = Suboperation::create($validatedData);
         return new SuboperationResource($suboperation);
     }
 
     public function show($id)
     {
-        $suboperation = Suboperation::findOrFail($id);
-        return new SuboperationResource($suboperation);
-    }
+        $suboperation = Suboperation::find($id);
 
-    public function update(SuboperationRequest $request, $id)
+        if (!$suboperation) {
+            return response()->json(['error' => 'Suboperation not found'], 404);
+        }
+
+        return response()->json($suboperation);
+    }
+    
+
+    public function update(SuboperationRequest $request, $suboperation)
     {
-        $suboperation = Suboperation::findOrFail($id);
+        $suboperation = Suboperation::findOrFail($suboperation);
         $suboperation->update($request->validated());
         return new SuboperationResource($suboperation);
     }
 
-    public function destroy($id)
+    public function destroy($suboperation)
     {
-        $suboperation = Suboperation::findOrFail($id);
         $suboperation->delete();
         return response()->json(null, 204);
     }

@@ -19,7 +19,7 @@ Route::prefix('operations')->group(function () {
 
 Route::prefix('suboperations')->group(function () {
     Route::get('/', [SuboperationController::class, 'index']);
-    Route::post('/{operationId}', [SuboperationController::class, 'store']);
+    Route::post('/{operation}', [SuboperationController::class, 'store']);
     Route::get('/{suboperation}', [SuboperationController::class, 'show'])->where('suboperation', '[0-9a-fA-F\-]+');
     Route::put('/{suboperation}', [SuboperationController::class, 'update'])->where('suboperation', '[0-9a-fA-F\-]+');
     Route::delete('/{suboperation}', [SuboperationController::class, 'destroy'])->where('suboperation', '[0-9a-fA-F\-]+');
