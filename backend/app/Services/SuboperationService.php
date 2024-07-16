@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Operation;
@@ -7,7 +8,15 @@ use Illuminate\Support\Facades\Log;
 
 class SuboperationService
 {
-    public function createSuboperation(int $operationId, array $data): Suboperation
+    /**
+     * Create a new suboperation.
+     *
+     * @param string $operationId
+     * @param array $data
+     * @return Suboperation
+     * @throws \Exception
+     */
+    public function createSuboperation(string $operationId, array $data): Suboperation
     {
         Log::info("Creating suboperation", ['operationId' => $operationId, 'data' => $data]);
         $operation = Operation::findOrFail($operationId);
@@ -18,6 +27,14 @@ class SuboperationService
         return $operation->suboperations()->create($data);
     }
 
+    /**
+     * Update an existing suboperation.
+     *
+     * @param Suboperation $suboperation
+     * @param array $data
+     * @return Suboperation
+     * @throws \Exception
+     */
     public function updateSuboperation(Suboperation $suboperation, array $data): Suboperation
     {
         Log::info("Updating suboperation", ['id' => $suboperation->id, 'data' => $data]);
@@ -33,7 +50,14 @@ class SuboperationService
         return $suboperation;
     }
 
-    public function deleteSuboperation(int $suboperationId, bool $forceDelete = false): void
+    /**
+     * Delete a suboperation and reorder remaining suboperations.
+     *
+     * @param string $suboperationId
+     * @param bool $forceDelete
+     * @return void
+     */
+    public function deleteSuboperation(string $suboperationId, bool $forceDelete = false): void
     {
         Log::info("Deleting suboperation", ['id' => $suboperationId, 'forceDelete' => $forceDelete]);
         $suboperation = Suboperation::withTrashed()->findOrFail($suboperationId);
@@ -45,7 +69,13 @@ class SuboperationService
         $this->reorderSuboperations($suboperation->operation_id);
     }
 
-    protected function reorderSuboperations(int $operationId): void
+    /**
+     * Reorder suboperations after deletion.
+     *
+     * @param string $operationId
+     * @return void
+     */
+    protected function reorderSuboperations(string $operationId): void
     {
         Log::info("Reordering suboperations", ['operationId' => $operationId]);
         $suboperations = Operation::findOrFail($operationId)->suboperations()->orderBy('number')->get();

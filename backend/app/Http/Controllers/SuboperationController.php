@@ -5,47 +5,78 @@ namespace App\Http\Controllers;
 use App\Models\Suboperation;
 use App\Http\Requests\SuboperationRequest;
 use App\Http\Resources\SuboperationResource;
-use Illuminate\Http\Request;
+use App\Services\SuboperationService;
+use Illuminate\Http\JsonResponse;
 
 class SuboperationController extends Controller
 {
-    public function index()
+    protected $suboperationService;
+
+    public function __construct(SuboperationService $suboperationService)
     {
-        $suboperations = Suboperation::paginate();
-        return SuboperationResource::collection($suboperations);
+        $this->suboperationService = $suboperationService;
     }
 
-    public function store(SuboperationRequest $request, $operationId)
+    /**
+     * Display a listing of suboperations.
+     *
+     * @return JsonResponse
+     */
+    public function index(): JsonResponse
+    {
+        $suboperations = Suboperation::paginate();
+        return response()->json(SuboperationResource::collection($suboperations));
+    }
+
+    /**
+     * Store a newly created suboperation.
+     *
+     * @param SuboperationRequest $request
+     * @param string $operationId
+     * @return JsonResponse
+     */
+    public function store(SuboperationRequest $request, string $operationId): JsonResponse
     {
         $validatedData = $request->validated();
         $validatedData['operation_id'] = $operationId;
     
-        $suboperation = Suboperation::create($validatedData);
-        return new SuboperationResource($suboperation);
+        $suboperation = $this->suboperationService->createSuboperation($operationId, $validatedData);
+        return response()->json(new SuboperationResource($suboperation), 201);
     }
 
-    public function show($id)
+    /**
+     * Display the specified suboperation.
+     *
+     * @param Suboperation $suboperation
+     * @return JsonResponse
+     */
+    public function show(Suboperation $suboperation): JsonResponse
     {
-        $suboperation = Suboperation::find($id);
-
-        if (!$suboperation) {
-            return response()->json(['error' => 'Suboperation not found'], 404);
-        }
-
-        return response()->json($suboperation);
-    }
-    
-
-    public function update(SuboperationRequest $request, $suboperation)
-    {
-        $suboperation = Suboperation::findOrFail($suboperation);
-        $suboperation->update($request->validated());
-        return new SuboperationResource($suboperation);
+        return response()->json(new SuboperationResource($suboperation));
     }
 
-    public function destroy($suboperation)
+    /**
+     * Update the specified suboperation.
+     *
+     * @param SuboperationRequest $request
+     * @param Suboperation $suboperation
+     * @return JsonResponse
+     */
+    public function update(SuboperationRequest $request, Suboperation $suboperation): JsonResponse
     {
-        $suboperation->delete();
+        $suboperation = $this->suboperationService->updateSuboperation($suboperation, $request->validated());
+        return response()->json(new SuboperationResource($suboperation));
+    }
+
+    /**
+     * Remove the specified suboperation.
+     *
+     * @param Suboperation $suboperation
+     * @return JsonResponse
+     */
+    public function destroy(Suboperation $suboperation): JsonResponse
+    {
+        $this->suboperationService->deleteSuboperation($suboperation->id);
         return response()->json(null, 204);
     }
 }

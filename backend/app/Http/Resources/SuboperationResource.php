@@ -1,11 +1,18 @@
 <?php
+
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SuboperationResource extends JsonResource
 {
-    public function toArray($request)
+    /**
+     * 
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return array
+     */
+    public function toArray($request): array
     {
         return [
             'id' => $this->id,
@@ -14,7 +21,6 @@ class SuboperationResource extends JsonResource
             'name' => $this->name,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'deleted_at' => $this->deleted_at,
         ];
     }
 }

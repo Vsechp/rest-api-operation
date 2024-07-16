@@ -7,6 +7,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Class Suboperation
+ *
+ * @property string $id
+ * @property string $operation_id
+ * @property int $number
+ * @property string $name
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ */
 class Suboperation extends Model
 {
     use SoftDeletes;
@@ -20,9 +31,8 @@ class Suboperation extends Model
         parent::boot();
         static::creating(function ($model) {
             if (empty($model->id)) {
-                $model->id = Str::uuid()->toString();
+                $model->id = (string) Str::uuid();
             }
         });
     }
 }
-

@@ -1,20 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Container, Typography, Grid } from '@material-ui/core';
-import SubOperationList from '../../features/operations/SubOperationList';
-import SubOperationForm from '../../components/SuboperationForm';
-import SubOperationDeleteDialog from '../../components/SubOperationDeleteDialog';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Container, Typography, Grid } from "@material-ui/core";
+import SubOperationList from "../../features/operations/SubOperationList";
+import SubOperationForm from "../../components/SuboperationForm";
+import SubOperationDeleteDialog from "../../components/SuboperationDeleteDialog";
 
 const OperationDetailsPage = () => {
   const { operationId } = useParams<{ operationId: string }>();
-  const [operation, setOperation] = useState<{ subOperations: any[] } | null>(null);
+  const [operation, setOperation] = useState<{ subOperations: any[] } | null>(
+    null
+  );
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedSubOperationId, setSelectedSubOperationId] = useState<string>(operationId ?? '');
-  const safeOperationId = operationId ?? '';
+  const [selectedSubOperationId, setSelectedSubOperationId] = useState<string>(
+    operationId ?? ""
+  );
+  const safeOperationId = operationId ?? "";
 
-  useEffect(() => {
-
-  }, [operationId]);
+  useEffect(() => {}, [operationId]);
 
   const handleOpenDeleteDialog = (subOperationId: string) => {
     setSelectedSubOperationId(subOperationId);
@@ -26,7 +28,6 @@ const OperationDetailsPage = () => {
   };
 
   const handleConfirmDelete = () => {
-    
     handleCloseDeleteDialog();
   };
 
@@ -37,22 +38,21 @@ const OperationDetailsPage = () => {
         <Grid item xs={12}>
           <SubOperationList
             SubOperation={operation?.subOperations || []}
-            onDelete={(subOperationId: number) => handleOpenDeleteDialog(subOperationId.toString())}
+            onDelete={(subOperationId: number) =>
+              handleOpenDeleteDialog(subOperationId.toString())
+            }
           />
         </Grid>
         <Grid item xs={12}>
-          <SubOperationForm
-            onSave={(data: any) => {
-            }}
-          />
+          <SubOperationForm onSave={(data: any) => {}} operationId={safeOperationId} />
         </Grid>
       </Grid>
       <SubOperationDeleteDialog
-        open={isDeleteDialogOpen}
+        isOpen={isDeleteDialogOpen}
         onClose={handleCloseDeleteDialog}
         onConfirm={handleConfirmDelete}
         operationId={safeOperationId}
-        subOperationId={operationId ?? ''}
+        subOperationId={selectedSubOperationId}
         softDelete={false}
       />
     </Container>

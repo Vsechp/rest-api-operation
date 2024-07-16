@@ -16,7 +16,7 @@ import {
 } from "@material-ui/core";
 import { Close as CloseIcon } from "@material-ui/icons";
 import OperationCard from "../../components/OperationCard";
-import { Operation } from "../../components/OperationForm"; 
+import { Operation } from "../../types"
 
 const OperationListPage = () => {
   const [operations, setOperations] = useState<Operation[]>([]);
@@ -37,7 +37,7 @@ const OperationListPage = () => {
     setIsLoading(true);
     try {
       const queryParams = `?page=${currentPage + 1}&limit=${rowsPerPage}`;
-      const response = await fetch(`http://localhost:8000/operations${queryParams}`);
+      const response = await fetch(`http://localhost:8080/operations${queryParams}`);
       if (!response.ok) {
         throw new Error('Ошибка загрузки данных');
       }
@@ -68,7 +68,7 @@ const OperationListPage = () => {
 
   const handleCreateOperation = async () => {
     try {
-      const response = await fetch('http://localhost:8000/operations', {
+      const response = await fetch('http://localhost:8080/operations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ const OperationListPage = () => {
 
   const handleDeleteOperation = async (operationId: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/operations/${operationId}`, {
+      const response = await fetch(`http://localhost:8080/operations/${operationId}`, {
         method: 'DELETE',
       });
       if (!response.ok) {

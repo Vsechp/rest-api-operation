@@ -6,12 +6,12 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class SuboperationRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return true;
-    }
-
-    public function rules()
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
+    public function rules(): array
     {
         return [
             'number' => 'required|integer',

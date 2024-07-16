@@ -18,3 +18,8 @@ export interface Operation {
     deleted_at: string | null;
   }
   
+  export interface FetchOperationsResponse {
+    operations: Operation[];
+    total: number;
+    currentPage: number;
+  }

@@ -1,10 +1,15 @@
 import axios from 'axios';
 import { Operation } from '../types';
 
-const API_URL = 'http://localhost:8080/api/operations';
+const API_URL = 'api/operations';
 
 export const fetchOperations = async (page: number, search: string) => {
-  const response = await axios.get<Operation[]>(`${API_URL}?page=${page}&search=${search}`);
+  const response = await axios.get<Operation[]>(`${API_URL}`, {
+    params: {
+      page,
+      search
+    }
+  });
   return response.data;
 };
 
@@ -20,5 +25,10 @@ export const updateOperation = async (id: string, operation: Partial<Operation>)
 
 export const deleteOperation = async (id: string) => {
   const response = await axios.delete(`${API_URL}/${id}`);
+  return response.data;
+};
+
+export const forceDeleteOperation = async (id: string) => {
+  const response = await axios.delete(`${API_URL}/${id}/force`);
   return response.data;
 };

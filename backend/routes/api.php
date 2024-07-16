@@ -1,9 +1,7 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\SuboperationController;
-
 
 Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
@@ -15,6 +13,10 @@ Route::prefix('operations')->group(function () {
     Route::get('/{operation}', [OperationController::class, 'show'])->where('operation', '[0-9a-fA-F\-]+');
     Route::put('/{operation}', [OperationController::class, 'update'])->where('operation', '[0-9a-fA-F\-]+');
     Route::delete('/{operation}', [OperationController::class, 'destroy'])->where('operation', '[0-9a-fA-F\-]+');
+    Route::put('/{operation}/restore', [OperationController::class, 'restore'])->where('operation', '[0-9a-fA-F\-]+');
+    Route::delete('/{operation}/force', [OperationController::class, 'forceDelete'])->where('operation', '[0-9a-fA-F\-]+');
+
+    Route::get('/deleted', [OperationController::class, 'showDeleted']);
 });
 
 Route::prefix('suboperations')->group(function () {

@@ -1,21 +1,32 @@
-import React from 'react';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
-import { Container } from '@mui/material';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './store';
 import OperationsList from './components/OperationsList';
-import OperationCard from './components/OperationCard';
-import OperationForm from './components/OperationForm';
-import SuboperationForm from './components/SuboperationForm';
+import OperationCardWrapper from './components/wrappers/OperationCardWrapper';
+import CreateOperationComponent from './components/CreateOperationComponent';
+import SuboperationFormWrapper from './components/wrappers/SuboperationFormWrapper';
 
 const App: React.FC = () => {
+  const [operationId, setOperationId] = useState<string | null>(null);
+
   return (
-    <Router>
-      <Container>
-        <Route path="/" component={OperationsList} />
-        <Route path="/create-operation" component={OperationForm} />
-        <Route path="/operation/:id" exact component={OperationCard} />
-        <Route path="/operation/:operationId/create-suboperation" component={SuboperationForm} />
-      </Container>
-    </Router>
+    <Provider store={store}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<OperationsList />} />
+          <Route path="/create-operation" element={
+            <div>
+              <CreateOperationComponent onOperationCreated={setOperationId} />
+              {operationId && (
+                <SuboperationFormWrapper operationId={operationId} onClose={() => setOperationId(null)} />
+              )}
+            </div>
+          } />
+          <Route path="/operation/:id" element={<OperationCardWrapper />} />
+        </Routes>
+      </Router>
+    </Provider>
   );
 };
 

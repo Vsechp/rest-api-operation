@@ -1,85 +1,56 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { getOperations, addOperation, editOperation, removeOperation } from '../../actions/operations';
+import { Operation, FetchOperationsResponse } from '../../types';
 
-interface SubOperation {
-  id: string;
-  name: string;
-  isDeleted?: boolean;
-}
-
-interface Operation {
-  id: string;
-  name: string;
-  amount: number;
-  subOperations: SubOperation[];
-}
-
-interface OperationState {
+interface OperationsState {
   operations: Operation[];
-  currentOperation?: Operation; // Для показа карточки отдельной операции
+  loading: boolean;
+  currentPage: number;
+  totalOperations: number;
+  error: string | null;
 }
 
-const initialState: OperationState = {
+const initialState: OperationsState = {
   operations: [],
+  loading: false,
+  currentPage: 1,
+  totalOperations: 0,
+  error: null,
 };
 
 const operationsSlice = createSlice({
   name: 'operations',
   initialState,
-  reducers: {
-    setOperations: (state, action: PayloadAction<Operation[]>) => {
-      state.operations = action.payload;
-    },
-    addOperation: (state, action: PayloadAction<Operation>) => {
-      state.operations.push(action.payload);
-    },
-    setCurrentOperation: (state, action: PayloadAction<string>) => {
-      state.currentOperation = state.operations.find(op => op.id === action.payload);
-    },
-    softDeleteSubOperation: (state, action: PayloadAction<{ operationId: string; subOperationId: string }>) => {
-      const { operationId, subOperationId } = action.payload;
-      const operation = state.operations.find(op => op.id === operationId);
-      if (operation) {
-        const subOperation = operation.subOperations.find(subOp => subOp.id === subOperationId);
-        if (subOperation) {
-          subOperation.isDeleted = true;
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getOperations.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getOperations.fulfilled, (state, action: PayloadAction<FetchOperationsResponse>) => {
+        state.loading = false;
+        state.operations = action.payload.operations;
+        state.totalOperations = action.payload.total;
+        state.currentPage = action.payload.currentPage;
+      })
+      .addCase(getOperations.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch operations';
+      })
+      .addCase(addOperation.fulfilled, (state, action: PayloadAction<Operation>) => {
+        state.operations.push(action.payload);
+      })
+      .addCase(editOperation.fulfilled, (state, action: PayloadAction<Operation>) => {
+        const index = state.operations.findIndex((op) => op.id === action.payload.id);
+        if (index !== -1) {
+          state.operations[index] = action.payload;
         }
-      }
-    },
-    hardDeleteSubOperation: (state, action: PayloadAction<{ operationId: string; subOperationId: string }>) => {
-      const { operationId, subOperationId } = action.payload;
-      const operation = state.operations.find(op => op.id === operationId);
-      if (operation) {
-        operation.subOperations = operation.subOperations.filter(subOp => subOp.id !== subOperationId);
-      }
-    },
-    editOperationName: (state, action: PayloadAction<{ operationId: string; newName: string }>) => {
-      const { operationId, newName } = action.payload;
-      const operation = state.operations.find(op => op.id === operationId);
-      if (operation) {
-        operation.name = newName;
-      }
-    },
-    editSubOperationName: (state, action: PayloadAction<{ operationId: string; subOperationId: string; newName: string }>) => {
-      const { operationId, subOperationId, newName } = action.payload;
-      const operation = state.operations.find(op => op.id === operationId);
-      if (operation) {
-        const subOperation = operation.subOperations.find(subOp => subOp.id === subOperationId);
-        if (subOperation) {
-          subOperation.name = newName;
-        }
-      }
-    },
+      })
+      .addCase(removeOperation.fulfilled, (state, action: PayloadAction<string>) => {
+        state.operations = state.operations.filter((op) => op.id !== action.payload);
+      });
   },
 });
-
-export const {
-  setOperations,
-  addOperation,
-  setCurrentOperation,
-  softDeleteSubOperation,
-  hardDeleteSubOperation,
-  editOperationName,
-  editSubOperationName,
-} = operationsSlice.actions;
 
 export default operationsSlice.reducer;

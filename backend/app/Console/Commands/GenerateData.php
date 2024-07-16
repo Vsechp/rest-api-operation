@@ -48,7 +48,7 @@ class GenerateData extends Command
                 ];
             }
 
-            // Изменение здесь: вставляем данные после каждых 100 операций вместо 1000
+            
             if ($i % 100 == 0 || $i == 100000) {
                 DB::table('operations')->insert($operations);
                 DB::table('suboperations')->insert($suboperations);
