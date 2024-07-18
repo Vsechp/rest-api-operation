@@ -38,14 +38,17 @@ class SuboperationService
     public function updateSuboperation(Suboperation $suboperation, array $data): Suboperation
     {
         Log::info("Updating suboperation", ['id' => $suboperation->id, 'data' => $data]);
-
-        $existingSuboperation = $suboperation->operation->suboperations()
-            ->where('number', $data['number'])
-            ->where('id', '!=', $suboperation->id)
-            ->first();
-        if ($existingSuboperation) {
-            throw new \Exception("Suboperation with number {$data['number']} already exists.");
+    
+        if (isset($data['number'])) {
+            $existingSuboperation = $suboperation->operation->suboperations()
+                ->where('number', $data['number'])
+                ->where('id', '!=', $suboperation->id)
+                ->first();
+            if ($existingSuboperation) {
+                throw new \Exception("Suboperation with number {$data['number']} already exists.");
+            }
         }
+    
         $suboperation->update($data);
         return $suboperation;
     }
@@ -57,31 +60,34 @@ class SuboperationService
      * @param bool $forceDelete
      * @return void
      */
-    public function deleteSuboperation(string $suboperationId, bool $forceDelete = false): void
+    public function deleteSuboperation(string $suboperationId)
     {
-        Log::info("Deleting suboperation", ['id' => $suboperationId, 'forceDelete' => $forceDelete]);
-        $suboperation = Suboperation::withTrashed()->findOrFail($suboperationId);
-        if ($forceDelete) {
-            $suboperation->forceDelete();
-        } else {
-            $suboperation->delete();
+        $suboperation = Suboperation::findOrFail($suboperationId);
+        $operationId = $suboperation->operation_id;
+        
+        $suboperation->delete();
+        
+        $remainingSuboperations = Suboperation::where('operation_id', $operationId)->orderBy('number')->get();
+        foreach ($remainingSuboperations as $index => $subop) {
+            $subop->number = $index + 1;
+            $subop->save();
         }
-        $this->reorderSuboperations($suboperation->operation_id);
+        
+        Log::info("Suboperation deleted", ['id' => $suboperationId]);
     }
 
     /**
-     * Reorder suboperations after deletion.
+     * Reorder suboperation numbers for the specified operation.
      *
      * @param string $operationId
-     * @return void
      */
-    protected function reorderSuboperations(string $operationId): void
+    public function reorderSuboperations($operationId)
     {
-        Log::info("Reordering suboperations", ['operationId' => $operationId]);
-        $suboperations = Operation::findOrFail($operationId)->suboperations()->orderBy('number')->get();
+        $suboperations = Suboperation::where('operation_id', $operationId)->orderBy('number', 'asc')->get();
         $number = 1;
         foreach ($suboperations as $suboperation) {
-            $suboperation->update(['number' => $number++]);
+            $suboperation->number = $number++;
+            $suboperation->save();
         }
     }
 }

@@ -7,16 +7,30 @@ import SubOperationDeleteDialog from "../../components/SuboperationDeleteDialog"
 
 const OperationDetailsPage = () => {
   const { operationId } = useParams<{ operationId: string }>();
-  const [operation, setOperation] = useState<{ subOperations: any[] } | null>(
-    null
-  );
+  const [operation, setOperation] = useState<any>(null);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSubOperationId, setSelectedSubOperationId] = useState<string>(
     operationId ?? ""
   );
   const safeOperationId = operationId ?? "";
 
-  useEffect(() => {}, [operationId]);
+  useEffect(() => {
+    const fetchOperation = async () => {
+      try {
+        const response = await fetch(`api/operations/${operationId}`);
+        if (!response.ok) {
+          throw new Error('Operation not found');
+        }
+        const data = await response.json();
+        setOperation(data);
+      } catch (error) {
+        console.error('Failed to fetch operation:', (error as Error).message);
+
+      }
+    };
+
+    fetchOperation();
+  }, [operationId]);
 
   const handleOpenDeleteDialog = (subOperationId: string) => {
     setSelectedSubOperationId(subOperationId);

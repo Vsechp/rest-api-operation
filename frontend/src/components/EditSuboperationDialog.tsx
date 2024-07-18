@@ -1,29 +1,30 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
-import { editSuboperation } from '../../src/actions/suboperations';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { editSuboperation } from '../actions/suboperations';
 import { Suboperation } from '../types';
 import { AppDispatch } from '../store/index';
 
 interface EditSuboperationDialogProps {
   suboperation: Suboperation;
   onClose: () => void;
+  onDelete?: () => void;
 }
 
-const EditSuboperationDialog: React.FC<EditSuboperationDialogProps> = ({ suboperation, onClose }) => {
-  const dispatch = useDispatch<AppDispatch>(); 
+const EditSuboperationDialog: React.FC<EditSuboperationDialogProps> = ({ suboperation, onClose, onDelete }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [name, setName] = useState(suboperation.name);
-  const [number, setNumber] = useState(suboperation.number.toString());
 
   const handleSubmit = () => {
-    dispatch(editSuboperation({ id: suboperation.id, suboperation: { name, number: parseInt(number) } }));
+    dispatch(editSuboperation({ id: suboperation.id, suboperation: { name } }));
     onClose();
   };
 
   return (
     <Dialog open onClose={onClose}>
-      <DialogTitle>Edit Suboperation</DialogTitle>
-      <DialogContent>
+      <DialogTitle sx={{ backgroundColor: '#f3e5f5' }}>Edit Suboperation</DialogTitle>
+      <DialogContent sx={{ backgroundColor: '#f3e5f5' }}>
         <TextField
           label="Name"
           value={name}
@@ -31,22 +32,19 @@ const EditSuboperationDialog: React.FC<EditSuboperationDialogProps> = ({ suboper
           fullWidth
           margin="normal"
         />
-        <TextField
-          label="Number"
-          type="number"
-          value={number}
-          onChange={(e) => setNumber(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="secondary">
+      <DialogActions sx={{ backgroundColor: '#f3e5f5', justifyContent: 'space-between' }}>
+        <Button onClick={onClose} variant="contained" sx={{ backgroundColor: 'purple', '&:hover': { backgroundColor: '#7b1fa2' } }}>
           Cancel
         </Button>
-        <Button onClick={handleSubmit} color="primary">
+        <Button onClick={handleSubmit} variant="contained" sx={{ backgroundColor: 'purple', '&:hover': { backgroundColor: '#7b1fa2' } }}>
           Save
         </Button>
+        {onDelete && (
+          <IconButton onClick={onDelete} color="error" aria-label="delete">
+            <DeleteIcon />
+          </IconButton>
+        )}
       </DialogActions>
     </Dialog>
   );

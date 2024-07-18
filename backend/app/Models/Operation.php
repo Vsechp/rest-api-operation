@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -35,6 +36,10 @@ class Operation extends Model
                 $model->id = (string) Str::uuid();
             }
         });
+
+        static::deleted(function ($model) {
+            $model->recalculateSuboperationsNumbers();
+        });
     }
 
     /**
@@ -43,5 +48,21 @@ class Operation extends Model
     public function suboperations(): HasMany
     {
         return $this->hasMany(Suboperation::class);
+    }
+
+    /**
+     * Recalculate suboperations numbers after deleting a suboperation.
+     */
+    public function recalculateSuboperationsNumbers()
+    {
+        $suboperations = $this->suboperations()->orderBy('number', 'asc')->get();
+
+        DB::transaction(function () use ($suboperations) {
+            $number = 1;
+            foreach ($suboperations as $suboperation) {
+                $suboperation->number = $number++;
+                $suboperation->save();
+            }
+        });
     }
 }

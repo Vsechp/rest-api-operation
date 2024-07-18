@@ -14,16 +14,16 @@ class DestroyData extends Command
     public function handle()
     {
         $startTime = microtime(true);
-
+    
         DB::transaction(function () {
-            Suboperation::query()->delete();
-            Operation::query()->delete();
+            Suboperation::query()->truncate(); 
+            Operation::query()->truncate(); 
         });
-
+    
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
-
-        $this->info("All operations and suboperations have been destroyed.");
+    
+        $this->info("All operations and suboperations have been completely destroyed.");
         $this->info("Execution time: {$executionTime} seconds.");
     }
 }

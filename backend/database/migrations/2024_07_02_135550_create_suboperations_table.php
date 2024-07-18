@@ -17,7 +17,6 @@ class CreateSuboperationsTable extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['operation_id', 'number']);
         });
     }
 

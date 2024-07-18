@@ -9,6 +9,8 @@ use App\DTO\OperationDTO;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 
 class OperationService
 {
@@ -23,7 +25,7 @@ class OperationService
         Log::info("Listing operations with parameters", ['params' => $params]);
         
         $query = Operation::query()
-            ->with('suboperations') 
+            ->with('suboperations')
             ->when(!empty($params->filter), function ($query) use ($params) {
                 foreach ($params->filter as $field => $value) {
                     $query->where($field, 'like', "%$value%");
@@ -62,10 +64,32 @@ class OperationService
      * @param array $data
      * @return Operation
      */
-    public function createOperation(array $data): Operation
+    public function createOperation(array $data, bool $isUpdate = false): Operation
     {
-        Log::info("Creating operation", ['data' => $data]);
-        return Operation::create($data);
+        try {
+            if ($isUpdate) {
+                $operation = Operation::find($data['id']);
+                if (!$operation) {
+                    throw new ModelNotFoundException('Operation not found.');
+                }
+                $operation->update($data);
+            } else {
+                if (!isset($data['number'])) {
+                    throw new \InvalidArgumentException('The "number" field is required.');
+                }
+                if (Operation::where('number', $data['number'])->exists()) {
+                    throw new \Exception('Operation with this number already exists.');
+                }
+                $operation = Operation::create($data);
+            }
+        
+            return $operation;
+        } catch (QueryException $e) {
+            if ($e->getCode() == '23505') { // Проверьте код ошибки для вашей СУБД
+                throw new \Exception('Operation with this number already exists.');
+            }
+            throw $e; // Перебрасываем исключение, если это не ошибка дублирования
+        }
     }
 
     /**

@@ -7,6 +7,8 @@ use App\Http\Requests\SuboperationRequest;
 use App\Http\Resources\SuboperationResource;
 use App\Services\SuboperationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Database\QueryException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class SuboperationController extends Controller
 {
@@ -71,12 +73,22 @@ class SuboperationController extends Controller
     /**
      * Remove the specified suboperation.
      *
+     * @param string $operationId
      * @param Suboperation $suboperation
      * @return JsonResponse
      */
-    public function destroy(Suboperation $suboperation): JsonResponse
-    {
-        $this->suboperationService->deleteSuboperation($suboperation->id);
-        return response()->json(null, 204);
-    }
+
+     public function destroy(Suboperation $suboperation): JsonResponse
+     {
+         try {
+             $operationId = $suboperation->operation_id; 
+             $this->suboperationService->deleteSuboperation($suboperation->id);
+             $this->suboperationService->reorderSuboperations($operationId);
+             return response()->json(['message' => 'Suboperation deleted successfully']);
+         } catch (QueryException $e) {
+             return response()->json(['error' => $e->getMessage()], 400);
+         } catch (ModelNotFoundException $e) {
+             return response()->json(['error' => $e->getMessage()], 404);
+         }
+     }
 }

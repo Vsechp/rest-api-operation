@@ -4,8 +4,18 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SuboperationRequest extends FormRequest
+class UpdateOperationRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -13,14 +23,8 @@ class SuboperationRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = [
+        return [
             'name' => 'required|string|max:255',
         ];
-    
-        if ($this->isMethod('post')) { 
-            $rules['number'] = 'required|integer';
-        }
-    
-        return $rules;
     }
 }

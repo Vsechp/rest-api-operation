@@ -3,8 +3,6 @@ import axios from 'axios';
 import { Operation, FetchOperationsResponse } from '../types';
 
 
-
-
 export const getOperations = createAsyncThunk<FetchOperationsResponse, { page: number; search: string }>(
   'operations/getOperations',
   async ({ page, search }) => {
@@ -51,6 +49,6 @@ export const forceRemoveOperation = createAsyncThunk(
 );
 
 export const setPage = (page: number) => ({
-  type: 'SET_PAGE',
+  type: 'operations/setPage',
   payload: page,
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Operation;
 use App\Http\Requests\OperationRequest;
+use App\Http\Requests\UpdateOperationRequest;
 use App\Http\Resources\OperationResource;
 use App\Services\OperationService;
 use Illuminate\Http\JsonResponse;
@@ -18,8 +19,6 @@ class OperationController extends Controller
     {
         $this->operationService = $operationService;
     }
-
-
 
 
     /**
@@ -39,7 +38,11 @@ class OperationController extends Controller
             $queryParams['name'] = $search;
         }
 
-        $operationQueryParameters = new OperationQueryParametersDTO($queryParams);
+
+        $page = (int) $request->query('page', 1);
+        $perPage = (int) $request->query('per_page', 10);
+
+        $operationQueryParameters = new OperationQueryParametersDTO($queryParams, $page, $perPage);
 
         $operations = $this->operationService->listOperationsWithSuboperations($operationQueryParameters);
 
@@ -59,18 +62,19 @@ class OperationController extends Controller
     public function store(OperationRequest $request): JsonResponse
     {
         $validated = $request->validated();
-
-        if (Operation::where('number', $validated['number'])->exists()) {
-            return response()->json([
-                'message' => 'Operation with this number already exists.',
-            ], 409);
+    
+        if (isset($validated['id'])) {
+            $operation = $this->operationService->createOperation($validated, true);
+            $message = 'Operation updated successfully';
+        } else {
+            $operation = $this->operationService->createOperation($validated);
+            $message = 'Operation created successfully';
         }
-
-        $operation = $this->operationService->createOperation($validated);
+    
         return response()->json([
-            'message' => 'Operation created successfully',
+            'message' => $message,
             'operation' => new OperationResource($operation)
-        ], 201);
+        ], 200);
     }
 
     /**
@@ -91,18 +95,18 @@ class OperationController extends Controller
      * @param Operation $operation
      * @return JsonResponse
      */
-    public function update(OperationRequest $request, Operation $operation): JsonResponse
+    public function update(UpdateOperationRequest $request, Operation $operation): JsonResponse
     {
         $validated = $request->validated();
-
-        if (Operation::where('number', $validated['number'])->where('id', '!=', $operation->id)->exists()) {
+    
+        if (!isset($validated['name'])) {
             return response()->json([
-                'message' => 'Operation with this number already exists.',
-            ], 409);
+                'message' => 'The name field is required.',
+            ], 400);
         }
-
-        $operation = $this->operationService->updateOperation($operation, $validated);
-
+    
+        $operation = $this->operationService->updateOperation($operation, ['name' => $validated['name']]);
+    
         return response()->json([
             'message' => 'Operation updated successfully',
             'operation' => new OperationResource($operation)

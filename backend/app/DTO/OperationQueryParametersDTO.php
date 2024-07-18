@@ -10,7 +10,7 @@ class OperationQueryParametersDTO
     public function __construct(
         ?array $filter = null,
         int $page = 1,
-        int $perPage = 15
+        int $perPage = 10
     ) {
         $this->filter = $filter;
         $this->page = max(1, $page);

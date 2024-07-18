@@ -24,8 +24,8 @@ class OperationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'number' => 'required|integer',
             'name' => 'required|string|max:255',
+            'number' => 'required',
         ];
     }
 }
