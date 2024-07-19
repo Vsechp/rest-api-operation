@@ -19,7 +19,7 @@ const OperationCardWrapper: React.FC = () => {
         const data = await fetchOperationById(id!);
         setOperation(data);
       } catch (err) {
-        setError('Ошибка при загрузке операции');
+        setError('Error while loading operation');
         console.error(err);
       } finally {
         setLoading(false);

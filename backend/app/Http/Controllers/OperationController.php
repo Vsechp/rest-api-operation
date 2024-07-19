@@ -85,6 +85,7 @@ class OperationController extends Controller
      */
     public function show(Operation $operation): JsonResponse
     {
+        $operation->load('suboperations');
         return response()->json(new OperationResource($operation));
     }
 

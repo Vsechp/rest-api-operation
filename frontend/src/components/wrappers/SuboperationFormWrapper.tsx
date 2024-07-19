@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../store/index';
-import { Button, TextField, Typography, Box, IconButton, Link } from '@mui/material';
+import { Button, TextField, Typography, Box, IconButton } from '@mui/material';
 import { addSuboperation } from '../../actions/suboperations';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import { Link as RouterLink } from 'react-router-dom';
 
 interface SuboperationFormWrapperProps {
   operationId: string;
   onClose: () => void;
+  onSuccess: () => void; // Добавляем callback для успешного создания подоперации
 }
 
-const SuboperationFormWrapper: React.FC<SuboperationFormWrapperProps> = ({ operationId, onClose }) => {
+const SuboperationFormWrapper: React.FC<SuboperationFormWrapperProps> = ({ operationId, onClose, onSuccess }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [suboperations, setSuboperations] = useState([{ name: '', number: '' }]);
@@ -47,6 +47,7 @@ const SuboperationFormWrapper: React.FC<SuboperationFormWrapperProps> = ({ opera
         };
         await dispatch(addSuboperation({ operationId, suboperation: newSuboperation })).unwrap();
       }
+      onSuccess(); // Вызываем callback после успешного создания подопераций
       onClose();
     } catch (err) {
       console.error('Error creating suboperations:', err);

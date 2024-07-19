@@ -2,24 +2,30 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { Operation, FetchOperationsResponse } from '../types';
 
+const API_URL = 'http://localhost:8080/api/operations';
 
 export const getOperations = createAsyncThunk<FetchOperationsResponse, { page: number; search: string }>(
   'operations/getOperations',
   async ({ page, search }) => {
-    const response = await fetch(`/api/operations?page=${page}&search=${search}`);
-    const data = await response.json();
-    return {
-      operations: data.data,
-      total: data.total, 
-      currentPage: data.current_page, 
-    } as FetchOperationsResponse;
+    const response = await axios.get<FetchOperationsResponse>(API_URL, {
+      params: { page, search }
+    });
+    return response.data;
+  }
+);
+
+export const getOperationById = createAsyncThunk<Operation, string>(
+  'operations/getOperationById',
+  async (id) => {
+    const response = await axios.get<Operation>(`${API_URL}/${id}`);
+    return response.data;
   }
 );
 
 export const addOperation = createAsyncThunk(
   'operations/create',
   async (operation: Omit<Operation, 'id'>) => {
-    const response = await axios.post('/api/operations', operation);
+    const response = await axios.post(API_URL, operation);
     return response.data;
   }
 );
@@ -27,7 +33,7 @@ export const addOperation = createAsyncThunk(
 export const editOperation = createAsyncThunk(
   'operations/update',
   async ({ id, operation }: { id: string; operation: Partial<Operation> }) => {
-    const response = await axios.put(`/api/operations/${id}`, operation);
+    const response = await axios.put(`${API_URL}/${id}`, operation);
     return response.data;
   }
 );
@@ -35,7 +41,7 @@ export const editOperation = createAsyncThunk(
 export const removeOperation = createAsyncThunk(
   'operations/delete',
   async (id: string) => {
-    await axios.delete(`/api/operations/${id}`);
+    await axios.delete(`${API_URL}/${id}`);
     return id;
   }
 );
@@ -43,12 +49,7 @@ export const removeOperation = createAsyncThunk(
 export const forceRemoveOperation = createAsyncThunk(
   'operations/forceDelete',
   async (id: string) => {
-    await axios.delete(`/api/operations/${id}/force`);
+    await axios.delete(`${API_URL}/${id}/force`);
     return id;
   }
 );
-
-export const setPage = (page: number) => ({
-  type: 'operations/setPage',
-  payload: page,
-});

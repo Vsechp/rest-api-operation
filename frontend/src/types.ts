@@ -19,7 +19,8 @@ export interface Operation {
   }
   
   export interface FetchOperationsResponse {
-    operations: Operation[];
+    current_page: number;
+    data: Operation[];
+    per_page: number;
     total: number;
-    currentPage: number;
   }

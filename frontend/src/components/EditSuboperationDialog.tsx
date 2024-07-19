@@ -1,24 +1,21 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { editSuboperation } from '../actions/suboperations';
 import { Suboperation } from '../types';
-import { AppDispatch } from '../store/index';
 
 interface EditSuboperationDialogProps {
   suboperation: Suboperation;
   onClose: () => void;
+  onSave: (updatedSuboperation: Suboperation) => Promise<void>;
   onDelete?: () => void;
 }
 
-const EditSuboperationDialog: React.FC<EditSuboperationDialogProps> = ({ suboperation, onClose, onDelete }) => {
-  const dispatch = useDispatch<AppDispatch>();
+const EditSuboperationDialog: React.FC<EditSuboperationDialogProps> = ({ suboperation, onClose, onSave, onDelete }) => {
   const [name, setName] = useState(suboperation.name);
 
-  const handleSubmit = () => {
-    dispatch(editSuboperation({ id: suboperation.id, suboperation: { name } }));
-    onClose();
+  const handleSubmit = async () => {
+    const updatedSuboperation = { ...suboperation, name };
+    await onSave(updatedSuboperation);
   };
 
   return (

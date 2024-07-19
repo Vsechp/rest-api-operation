@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Operation;
 use App\Models\Suboperation;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class GenerateData extends Command
 {
@@ -15,6 +16,8 @@ class GenerateData extends Command
 
     public function handle()
     {
+        ini_set('memory_limit', '512M');
+
         $startTime = microtime(true);
 
         Operation::truncate();
@@ -24,38 +27,51 @@ class GenerateData extends Command
         $suboperations = [];
         $lastNumber = 0;
 
-        for ($i = 1; $i <= 100000; $i++) {
-            $number = ++$lastNumber;
-            $operationId = Str::uuid()->toString();
-            $now = now();
-            $operations[] = [
-                'id' => $operationId,
-                'name' => Str::random(rand(4, 10)),
-                'number' => $number,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
+        $totalOperations = 100000;
+        $totalSuboperations = 0;
+        $batchSize = 1000;
+        $now = Carbon::now();
 
-            $suboperationsCount = rand(1, 10);
-            for ($j = 0; $j < $suboperationsCount; $j++) {
-                $suboperations[] = [
-                    'id' => Str::uuid()->toString(),
-                    'operation_id' => $operationId,
+        DB::beginTransaction();
+        try {
+            for ($i = 1; $i <= $totalOperations; $i++) {
+                $number = ++$lastNumber;
+                $operationId = Str::uuid()->toString();
+                $operations[] = [
+                    'id' => $operationId,
                     'name' => Str::random(rand(4, 10)),
-                    'number' => $j + 1,
+                    'number' => $number,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
-            }
 
-            
-            if ($i % 100 == 0 || $i == 100000) {
-                DB::table('operations')->insert($operations);
-                DB::table('suboperations')->insert($suboperations);
-                $this->info("Inserted 100 operations and their suboperations.");
-                $operations = [];
-                $suboperations = [];
+                $suboperationsCount = rand(1, 10);
+                $totalSuboperations += $suboperationsCount;
+                for ($j = 0; $j < $suboperationsCount; $j++) {
+                    $suboperations[] = [
+                        'id' => Str::uuid()->toString(),
+                        'operation_id' => $operationId,
+                        'name' => Str::random(rand(4, 10)),
+                        'number' => $j + 1,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+
+                if (count($operations) >= $batchSize || $i == $totalOperations) {
+                    DB::table('operations')->insert($operations);
+                    DB::table('suboperations')->insert($suboperations);
+                    $this->info("Inserted $i operations and $totalSuboperations suboperations.");
+                    $operations = [];
+                    $suboperations = [];
+                    gc_collect_cycles();
+                }
             }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->error('Failed to generate data: ' . $e->getMessage());
+            return;
         }
 
         $endTime = microtime(true);

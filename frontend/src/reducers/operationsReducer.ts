@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   getOperations,
+  getOperationById,
   addOperation,
   editOperation,
   removeOperation,
@@ -41,18 +42,26 @@ const operationsSlice = createSlice({
         getOperations.fulfilled,
         (state, action: PayloadAction<FetchOperationsResponse>) => {
           state.loading = false;
-          if (state.currentPage === 1) {
-            state.operations = action.payload.operations;
-          } else {
-            state.operations = [...state.operations, ...action.payload.operations];
-          }
+          state.operations = action.payload.data; 
           state.totalCount = action.payload.total;
+          state.currentPage = action.payload.current_page; 
         }
       )
       .addCase(getOperations.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch operations";
       })
+      .addCase(
+        getOperationById.fulfilled,
+        (state, action: PayloadAction<Operation>) => {
+          const index = state.operations.findIndex(op => op.id === action.payload.id);
+          if (index === -1) {
+            state.operations.push(action.payload);
+          } else {
+            state.operations[index] = action.payload;
+          }
+        }
+      )
       .addCase(
         addOperation.fulfilled,
         (state, action: PayloadAction<Operation>) => {

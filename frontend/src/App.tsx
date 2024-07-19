@@ -19,7 +19,11 @@ const App: React.FC = () => {
             <div>
               <CreateOperationComponent onOperationCreated={setOperationId} />
               {operationId && (
-                <SuboperationFormWrapper operationId={operationId} onClose={() => setOperationId(null)} />
+                <SuboperationFormWrapper 
+                  operationId={operationId} 
+                  onClose={() => setOperationId(null)} 
+                  onSuccess={() => console.log('Suboperation added successfully')} // Добавляем onSuccess пропс
+                />
               )}
             </div>
           } />
