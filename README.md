@@ -4,6 +4,12 @@ The project uses a PostgreSQL database to manage operations and their suboperati
 
 ## How to Run the Project
 
+## Requirements
+
+- Docker
+- Node.js
+- npm (npm install --legacy-peer-deps)
+
 **Step 1: Clone the Repository**
 Clone the repository to your local machine:
 ```
